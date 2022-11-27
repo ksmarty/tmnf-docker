@@ -1,0 +1,9 @@
+[package]
+name = "tmnf_setup"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+exile = { git = "https://github.com/ksmarty/exile" }
+strip_bom = "1.0.0"
+phf = { version = "0.11.1", features = ["macros"] }
