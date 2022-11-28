@@ -14,6 +14,7 @@ fn get_env(key: &str) -> Option<String> {
         "ADMINS" => "",
         "HOST_USER" => "",
         "HOST_PASS" => "",
+        "MYSQL_DATABASE" => "aseco",
         "MYSQL_USER" => "tmf",
         "MYSQL_PASSWORD" => "password",
         "SERVER_PORT" => "2350",
