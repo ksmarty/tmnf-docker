@@ -44,4 +44,6 @@ RUN unzip -q \*.zip && \
     cp xaseco/newinstall/*.xml xaseco && \
     cp xaseco/newinstall/*.php xaseco/includes
 
+VOLUME /tmnf
+
 CMD ["./tmnf_setup"]

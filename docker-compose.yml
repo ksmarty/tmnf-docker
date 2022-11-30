@@ -6,6 +6,7 @@ services:
     container_name: tmnf_server
     volumes:
       - socket:/run/mysqld/
+      # - main_vol:/tmnf
     ports:
       - 2350:2350/tcp # Server
       - 2350:2350/udp # Server
@@ -25,6 +26,11 @@ services:
 networks:
   default:
 
-
 volumes:
   socket:
+  # main_vol:
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     device: <HOST DIRECTORY>
+  #     o: bind
