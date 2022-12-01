@@ -1,30 +1,33 @@
-use exile::{error::Result, Document, Element};
+use exile::{Document, Element};
 use phf::phf_map;
+use regex::Regex;
 use std::{
-    env, fs,
+    env,
+    fs::{self, OpenOptions},
+    io::{Read, Write},
     process::{Command, Stdio},
 };
 use strip_bom::StripBom;
 
-fn get_env(key: &str) -> Option<String> {
+fn get_env<S: AsRef<str> + std::fmt::Display>(key: S) -> Option<String> {
     const ENVS: phf::Map<&str, &str> = phf_map! {
         "SERVER_NAME" => "TMNF Docker Server",
-        "SERVER_PASS" => "PASSWORD123",
-        "NATION" => "",
-        "ADMINS" => "",
-        "HOST_USER" => "",
-        "HOST_PASS" => "",
+        "SERVER_PASS" => "P@ssw0rd123",
         "MYSQL_DATABASE" => "aseco",
         "MYSQL_USER" => "tmf",
-        "MYSQL_PASSWORD" => "password",
+        "MYSQL_PASSWORD" => "MYSQL_P4SS",
+        "MYSQL_ROOT_PASSWORD" => "MYSQL_R00T_P4SS",
         "SERVER_PORT" => "2350",
         "P2P_PORT" => "3450",
         "RPC_PORT" => "5000",
+        "GAME_CONFIG" => "NationsBlue.txt",
+        "ADMINS" => "",
+        "AUTOSAVE" => "OFF"
     };
 
-    match env::var(key) {
+    match env::var(key.as_ref()) {
         Ok(val) => Some(val),
-        Err(_e) => match ENVS.get(key) {
+        Err(_e) => match ENVS.get(key.as_ref()) {
             Some(val) => Some(val.to_string()),
             None => {
                 println!("Requested key \"{key}\" not found!");
@@ -34,14 +37,21 @@ fn get_env(key: &str) -> Option<String> {
     }
 }
 
-fn load_file(file: &str) -> Result<Document> {
-    let dedicated_cfg = fs::read_to_string(file).expect("File not found");
+fn load_xml(path: &str) -> exile::error::Result<Document> {
+    let file = fs::read_to_string(path).expect("File not found");
 
-    exile::parse(dedicated_cfg.strip_bom())
+    exile::parse(file.strip_bom())
 }
 
 fn set_text<S: AsRef<str>>(el: &mut Element, node: &str, text: S) {
     el.child_mut(node).unwrap().set_text(text.as_ref()).unwrap();
+}
+
+fn boolean_env<S: AsRef<str>>(key: S) -> Result<bool, ()> {
+    match get_env(key.as_ref()) {
+        Some(x) => Ok(x.eq_ignore_ascii_case("ON") || x.eq_ignore_ascii_case("TRUE")),
+        None => Err(()),
+    }
 }
 
 fn authorization_levels(authorization_levels: &mut Element) {
@@ -84,7 +94,7 @@ fn system_config(system_config: &mut Element) {
 
 fn dedicated_cfg() {
     let path = "GameData/Config/dedicated_cfg.txt";
-    let mut doc = load_file(path).unwrap();
+    let mut doc = load_xml(path).unwrap();
 
     authorization_levels(doc.root_mut().child_mut("authorization_levels").unwrap());
     masterserver_account(doc.root_mut().child_mut("masterserver_account").unwrap());
@@ -96,42 +106,40 @@ fn dedicated_cfg() {
 
 fn localdatabase() {
     let path = "xaseco/localdatabase.xml";
-    let mut doc = load_file(path).unwrap();
+    let mut doc = load_xml(path).unwrap();
 
-    doc.root_mut()
-        .child_mut("mysql_login")
-        .unwrap()
-        .set_text(get_env("MYSQL_USER").unwrap())
-        .unwrap();
-    doc.root_mut()
-        .child_mut("mysql_password")
-        .unwrap()
-        .set_text(get_env("MYSQL_PASSWORD").unwrap())
-        .unwrap();
-    doc.root_mut()
-        .child_mut("mysql_database")
-        .unwrap()
-        .set_text(get_env("MYSQL_DATABASE").unwrap())
-        .unwrap();
+    const GAME_MODE: phf::Map<&str, &str> = phf_map! {
+        "mysql_login" => "MYSQL_USER",
+        "mysql_password" => "MYSQL_PASSWORD",
+        "mysql_database" => "MYSQL_DATABASE",
+    };
+
+    GAME_MODE.entries().for_each(|(key, value)| {
+        doc.root_mut()
+            .child_mut(key)
+            .unwrap()
+            .set_text(get_env(value).unwrap())
+            .unwrap()
+    });
 
     doc.save(path).unwrap();
 }
 
 fn config() {
     let path = "xaseco/config.xml";
-    let mut doc = load_file(path).unwrap();
+    let mut doc = load_xml(path).unwrap();
 
-    let masteradmins = doc
-        .root_mut()
-        .child_mut("aseco")
-        .unwrap()
-        .child_mut("masteradmins")
-        .unwrap();
+    let aseco = doc.root_mut().child_mut("aseco").unwrap();
+    let masteradmins = aseco.child_mut("masteradmins").unwrap();
 
     for admin in get_env("ADMINS").unwrap().split(",") {
         let mut el = Element::from_name("tmlogin");
         el.add_text(admin);
         masteradmins.add_child(el);
+    }
+
+    if boolean_env("AUTOSAVE").unwrap() {
+        set_text(aseco, "default_tracklist", get_env("GAME_CONFIG").unwrap());
     }
 
     let tmserver = doc.root_mut().child_mut("tmserver").unwrap();
@@ -143,7 +151,7 @@ fn config() {
 
 fn dedimania() {
     let path = "xaseco/dedimania.xml";
-    let mut doc = load_file(path).unwrap();
+    let mut doc = load_xml(path).unwrap();
 
     let masterserver_account = doc.root_mut().child_mut("masterserver_account").unwrap();
     set_text(masterserver_account, "login", get_env("HOST_USER").unwrap());
@@ -157,13 +165,119 @@ fn dedimania() {
     doc.save(path).unwrap();
 }
 
+fn guest_list() {
+    let path = "GameData/Config/guestlist.txt";
+    let mut doc = load_xml(path).unwrap();
+
+    let guest_list = doc.root_mut();
+
+    for admin in get_env("ADMINS").unwrap().split(",") {
+        let mut player = Element::from_name("player");
+        let mut login = Element::from_name("login");
+        login.add_text(admin);
+        player.add_child(login);
+        guest_list.add_child(player);
+    }
+
+    doc.save(path).unwrap();
+}
+
+fn custom_gamemode() {
+    let config_file = match get_env("GAME_CONFIG") {
+        Some(file_name) => file_name,
+        None => return println!("No config file specified."),
+    };
+
+    let path = format!("GameData/Tracks/MatchSettings/Nations/{config_file}");
+    let mut doc = load_xml(path.as_str()).unwrap();
+
+    set_text(
+        doc.root_mut().child_mut("filter").unwrap(),
+        "random_map_order",
+        get_env("RANDOM_MAP_ORDER").unwrap(),
+    );
+
+    let gameinfos = doc.root_mut().child_mut("gameinfos").unwrap();
+
+    const GAME_MODE: phf::Map<&str, &str> = phf_map! {
+        "Rounds" => "0",
+        "TimeAttack" => "1",
+        "Team" => "2",
+        "Laps" => "3",
+        "Stunts" => "4",
+    };
+
+    let game_mode_env = get_env("GAME_MODE").unwrap();
+
+    set_text(
+        gameinfos,
+        "game_mode",
+        GAME_MODE.get(game_mode_env.as_str()).unwrap(),
+    );
+
+    let mut set_text_env = |s| set_text(gameinfos, s, get_env(s.to_uppercase()).unwrap());
+
+    match game_mode_env.as_str() {
+        "Rounds" => {
+            set_text_env("rounds_pointslimit");
+            set_text_env("rounds_usenewrules");
+            set_text_env("rounds_forcedlaps");
+        }
+        "TimeAttack" => {
+            set_text_env("timeattack_limit");
+        }
+        "Team" => {
+            set_text_env("team_pointslimit");
+            set_text_env("team_maxpoints");
+            set_text_env("team_usenewrules");
+        }
+        "Laps" => {
+            set_text_env("laps_nblaps");
+            set_text_env("laps_timelimit");
+        }
+        "Stunts" => {}
+        _ => println!("Invalid game mode specified!!"),
+    };
+
+    doc.save(path).unwrap();
+}
+
+fn autosave() {
+    if !boolean_env("AUTOSAVE").unwrap() {
+        return;
+    }
+
+    // https://www.tm-forum.com/viewtopic.php?t=26755
+
+    let path = "xaseco/includes/rasp.settings.php";
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .append(false)
+        .open(path)
+        .unwrap();
+    let mut contents = String::new();
+
+    file.read_to_string(&mut contents).unwrap();
+
+    let variable_name = "autosave_matchsettings";
+    let new_value = get_env("GAME_CONFIG").unwrap();
+
+    let re = Regex::new(format!(r"^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
+    let new_contents = re.replace(contents.as_str(), format!("${variable_name} = {new_value}"));
+
+    file.write_all(new_contents.as_bytes()).unwrap();
+}
+
 fn commands() {
+    let game_config = format!(
+        "/game_settings=MatchSettings/Nations/{}",
+        get_env("GAME_CONFIG").unwrap()
+    );
+
     Command::new("./TrackmaniaServer")
         .current_dir("/tmnf")
-        .args([
-            "/game_settings=MatchSettings/Nations/NationsBlue.txt",
-            "/dedicated_cfg=dedicated_cfg.txt",
-        ])
+        .args([game_config.as_str(), "/dedicated_cfg=dedicated_cfg.txt"])
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .spawn()
@@ -185,6 +299,10 @@ fn main() {
     localdatabase();
     config();
     dedimania();
+    guest_list();
+
+    custom_gamemode();
+    autosave();
 
     commands();
 

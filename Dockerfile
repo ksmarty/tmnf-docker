@@ -38,6 +38,7 @@ WORKDIR /tmnf
 
 COPY --from=builder target/release/tmnf_setup ./tmnf_setup
 COPY zips/* ./
+COPY Custom.txt GameData/Tracks/MatchSettings/Nations
 
 RUN unzip -q \*.zip && \
     rm *.zip && \
