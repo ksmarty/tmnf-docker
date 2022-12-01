@@ -44,7 +44,8 @@ RUN unzip -q \*.zip && \
     cp xaseco/newinstall/*.xml xaseco && \
     cp xaseco/newinstall/*.php xaseco/includes
 
-COPY Custom.txt GameData/Tracks/MatchSettings/Nations
+COPY configs/Custom.txt GameData/Tracks/MatchSettings/Nations
+COPY configs/guestlist.txt GameData/Config
 
 VOLUME /tmnf
 
