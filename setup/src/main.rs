@@ -20,7 +20,6 @@ fn get_env<S: AsRef<str> + std::fmt::Display>(key: S) -> Option<String> {
         "SERVER_PORT" => "2350",
         "P2P_PORT" => "3450",
         "RPC_PORT" => "5000",
-        "GAME_CONFIG" => "NationsBlue.txt",
         "ADMINS" => "",
         "AUTOSAVE" => "OFF",
         "RANDOM_MAP_ORDER" => "0",
@@ -140,7 +139,11 @@ fn config() {
     }
 
     if boolean_env("AUTOSAVE").unwrap() {
-        set_text(aseco, "default_tracklist", get_env("GAME_CONFIG").unwrap());
+        set_text(
+            aseco,
+            "default_tracklist",
+            get_env("GAME_CONFIG").unwrap_or("NationsBlue.txt".to_string()),
+        );
     }
 
     let tmserver = doc.root_mut().child_mut("tmserver").unwrap();
@@ -264,7 +267,7 @@ fn autosave() {
     file.read_to_string(&mut contents).unwrap();
 
     let variable_name = "autosave_matchsettings";
-    let new_value = get_env("GAME_CONFIG").unwrap();
+    let new_value = get_env("GAME_CONFIG").unwrap_or("NationsBlue.txt".to_string());
 
     let re = Regex::new(format!(r"^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
     let new_contents = re.replace(contents.as_str(), format!("${variable_name} = {new_value}"));
@@ -275,7 +278,7 @@ fn autosave() {
 fn commands() {
     let game_config = format!(
         "/game_settings=MatchSettings/Nations/{}",
-        get_env("GAME_CONFIG").unwrap()
+        get_env("GAME_CONFIG").unwrap_or("NationsBlue.txt".to_string())
     );
 
     Command::new("./TrackmaniaServer")
