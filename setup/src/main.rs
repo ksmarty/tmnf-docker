@@ -180,6 +180,8 @@ fn guest_list() {
         guest_list.add_child(player);
     }
 
+    println!("{}", doc.to_string());
+
     doc.save(path).unwrap();
 }
 
