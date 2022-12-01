@@ -32,11 +32,12 @@ Edit `secrets.example` based on variables below
 
 ### Custom Game Mode
 
-| Variable      | Default | Allowed Values | Notes                                                                                              |
-| ------------- | ------- | -------------- | -------------------------------------------------------------------------------------------------- |
-| `AUTOSAVE`    | `OFF`   | `ON` / `OFF`   | Enable / Disable autosaves                                                                         |
-| `GAME_CONFIG` |         | String         | File in `GameData/Tracks/MatchSettings/Nations`. `Custom.xml` is pre-installed, or create your own |
-| `GAME_MODE`   |         | String         | One of: `Rounds`, `TimeAttack`, `Team`, `Laps`, `Stunts`                                           |
+| Variable           | Default | Allowed Values | Notes                                                                                              |
+| ------------------ | ------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| `AUTOSAVE`         | `OFF`   | `ON` / `OFF`   | Enable / Disable autosaves                                                                         |
+| `GAME_CONFIG`      |         | String         | File in `GameData/Tracks/MatchSettings/Nations`. `Custom.xml` is pre-installed, or create your own |
+| `GAME_MODE`        |         | String         | One of: `Rounds`, `TimeAttack`, `Team`, `Laps`, `Stunts`                                           |
+| `RANDOM_MAP_ORDER` | `OFF`   | `ON` / `OFF`   | Shuffle map order on startup                                                                       |
 
 #### Mode-Specific Settings
 

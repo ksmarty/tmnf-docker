@@ -22,7 +22,8 @@ fn get_env<S: AsRef<str> + std::fmt::Display>(key: S) -> Option<String> {
         "RPC_PORT" => "5000",
         "GAME_CONFIG" => "NationsBlue.txt",
         "ADMINS" => "",
-        "AUTOSAVE" => "OFF"
+        "AUTOSAVE" => "OFF",
+        "RANDOM_MAP_ORDER" => "0",
     };
 
     match env::var(key.as_ref()) {
@@ -194,7 +195,7 @@ fn custom_gamemode() {
     set_text(
         doc.root_mut().child_mut("filter").unwrap(),
         "random_map_order",
-        get_env("RANDOM_MAP_ORDER").unwrap(),
+        (boolean_env("RANDOM_MAP_ORDER").unwrap() as i32).to_string(),
     );
 
     let gameinfos = doc.root_mut().child_mut("gameinfos").unwrap();
