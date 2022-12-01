@@ -39,7 +39,7 @@ fn get_env<S: AsRef<str> + std::fmt::Display>(key: S) -> Option<String> {
 }
 
 fn load_xml(path: &str) -> exile::error::Result<Document> {
-    let file = fs::read_to_string(path).expect(format!("File not found: <{path}>").as_str());
+    let file = fs::read_to_string(path).expect(format!("File not found: <{}>", path).as_str());
 
     exile::parse(file.strip_bom())
 }
