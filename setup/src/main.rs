@@ -262,6 +262,8 @@ fn autosave() {
         .unwrap();
     let mut contents = String::new();
 
+    println!("{}", contents);
+
     file.read_to_string(&mut contents).unwrap();
 
     let variable_name = "autosave_matchsettings";
