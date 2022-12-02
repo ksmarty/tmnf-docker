@@ -4,7 +4,7 @@ use regex::Regex;
 use std::{
     env,
     fs::{self, OpenOptions},
-    io::{Read, Write},
+    io::{Read, Seek, Write},
     process::{Command, Stdio},
 };
 use strip_bom::StripBom;
@@ -270,9 +270,10 @@ fn autosave() {
     let re = Regex::new(format!(r"(?m)^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
     let new_contents = re.replace_all(
         contents.as_str(),
-        format!(r"$${variable_name} = {new_value};"),
+        format!("$${variable_name} = \"{new_value}\";"),
     );
 
+    file.rewind().unwrap();
     file.write_all(new_contents.as_bytes()).unwrap();
 }
 
