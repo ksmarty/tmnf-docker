@@ -247,8 +247,6 @@ fn custom_gamemode() {
 }
 
 fn autosave() {
-    println!("Autosave: {:?}", boolean_env("AUTOSAVE"));
-
     if !boolean_env("AUTOSAVE").unwrap() {
         return;
     }
@@ -264,17 +262,16 @@ fn autosave() {
         .unwrap();
     let mut contents = String::new();
 
-    println!("{}", contents);
-
     file.read_to_string(&mut contents).unwrap();
 
     let variable_name = "autosave_matchsettings";
     let new_value = get_env("GAME_CONFIG").unwrap_or("NationsBlue.txt".to_string());
 
-    let re = Regex::new(format!(r"^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
-    let new_contents = re.replace(contents.as_str(), format!("${variable_name} = {new_value}"));
-
-    println!("{}", new_contents);
+    let re = Regex::new(format!(r"(?m)^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
+    let new_contents = re.replace_all(
+        contents.as_str(),
+        format!(r"$${variable_name} = {new_value};"),
+    );
 
     file.write_all(new_contents.as_bytes()).unwrap();
 }
