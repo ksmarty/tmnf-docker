@@ -183,8 +183,6 @@ fn guest_list() {
         guest_list.add_child(player);
     }
 
-    println!("{}", doc.to_string());
-
     doc.save(path).unwrap();
 }
 
@@ -271,6 +269,8 @@ fn autosave() {
 
     let re = Regex::new(format!(r"^\$({variable_name}) = (?P<val>.*?);").as_str()).unwrap();
     let new_contents = re.replace(contents.as_str(), format!("${variable_name} = {new_value}"));
+
+    println!("{}", new_contents);
 
     file.write_all(new_contents.as_bytes()).unwrap();
 }
