@@ -247,6 +247,8 @@ fn custom_gamemode() {
 }
 
 fn autosave() {
+    println!("Autosave: {:?}", boolean_env("AUTOSAVE"));
+
     if !boolean_env("AUTOSAVE").unwrap() {
         return;
     }
