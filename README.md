@@ -14,21 +14,21 @@ Edit `secrets.example` based on variables below
 
 ### General
 
-| Variable              | Default            | Allowed Values | Notes                                                    |
-| --------------------- | ------------------ | -------------- | -------------------------------------------------------- |
-| `SERVER_NAME`         | TMNF Docker Server | String         |                                                          |
-| `NATION`              | ❗                 | String{3}      | 3-letter country abbreviation                            |
-| `SERVER_PASS`         | P@ssw0rd123        | String         | Set as empty string for no password                      |
-| `HOST_USER`           | ❗                 | String         | Username of host TMNF account                            |
-| `HOST_PASS`           | ❗                 | String         | Password of host TMNF account                            |
-| `ADMINS`              |                    | String         | Comma-separated list of admin usernames (**No spaces!**) |
-| `SERVER_PORT`         | 2350               | Number         |                                                          |
-| `P2P_PORT`            | 3450               | Number         |                                                          |
-| `RPC_PORT`            | 5000               | Number         |                                                          |
-| `MYSQL_DATABASE`      | aseco              | String         |                                                          |
-| `MYSQL_USER`          | tmf                | String         |                                                          |
-| `MYSQL_PASSWORD`      | MYSQL_P4SS         | String         |                                                          |
-| `MYSQL_ROOT_PASSWORD` | MYSQL_R00T_P4SS    | String         |                                                          |
+| Variable              | Default            | Allowed Values | Notes                                   |
+| --------------------- | ------------------ | -------------- | --------------------------------------- |
+| `SERVER_NAME`         | TMNF Docker Server | String         |                                         |
+| `NATION`              | ❗                 | String{3}      | 3-letter country abbreviation           |
+| `SERVER_PASS`         | P@ssw0rd123        | String         | Set as empty string for no password     |
+| `HOST_USER`           | ❗                 | String         | Username of host TMNF account           |
+| `HOST_PASS`           | ❗                 | String         | Password of host TMNF account           |
+| `ADMINS`              |                    | String         | Comma-separated list of admin usernames |
+| `SERVER_PORT`         | 2350               | Number         |                                         |
+| `P2P_PORT`            | 3450               | Number         |                                         |
+| `RPC_PORT`            | 5000               | Number         |                                         |
+| `MYSQL_DATABASE`      | aseco              | String         |                                         |
+| `MYSQL_USER`          | tmf                | String         |                                         |
+| `MYSQL_PASSWORD`      | MYSQL_P4SS         | String         |                                         |
+| `MYSQL_ROOT_PASSWORD` | MYSQL_R00T_P4SS    | String         |                                         |
 
 ### Custom Game Mode
 

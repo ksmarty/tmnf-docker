@@ -24,6 +24,19 @@ EXPOSE 5000/tcp
 EXPOSE 5000/udp
 EXPOSE 8002/tcp
 
+ENV SERVER_NAME="TMNF Docker Server" \
+    SERVER_PASS="P@ssw0rd123" \
+    MYSQL_DATABASE="aseco" \
+    MYSQL_USER="tmf" \
+    MYSQL_PASSWORD="MYSQL_P4SS" \
+    MYSQL_ROOT_PASSWORD="MYSQL_R00T_P4SS" \
+    SERVER_PORT="2350" \
+    P2P_PORT="3450" \
+    RPC_PORT="5000" \
+    ADMINS="" \
+    AUTOSAVE="OFF" \
+    RANDOM_MAP_ORDER="0"
+
 LABEL maintainer="kyle@kyleschwartz.ca"
 LABEL version="1.0"
 LABEL description="TrackMania Nations Forever Server"
@@ -34,9 +47,10 @@ RUN apt-get update && \
     apt-get install -y php5.6 php5.6-xml php5.6-common php5.6-mysql unzip && \
     mkdir /tmnf
 
+COPY --from=builder target/release/tmnf_setup /tmnf_setup
+
 WORKDIR /tmnf
 
-COPY --from=builder target/release/tmnf_setup ./tmnf_setup
 COPY zips/* ./
 
 RUN unzip -q \*.zip && \
@@ -49,4 +63,4 @@ COPY configs/guestlist.txt GameData/Config
 
 VOLUME /tmnf
 
-CMD ["./tmnf_setup"]
+CMD ["/tmnf_setup"]

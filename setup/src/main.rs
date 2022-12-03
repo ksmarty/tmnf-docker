@@ -10,35 +10,17 @@ use std::{
 use strip_bom::StripBom;
 
 fn get_env<S: AsRef<str> + std::fmt::Display>(key: S) -> Option<String> {
-    const ENVS: phf::Map<&str, &str> = phf_map! {
-        "SERVER_NAME" => "TMNF Docker Server",
-        "SERVER_PASS" => "P@ssw0rd123",
-        "MYSQL_DATABASE" => "aseco",
-        "MYSQL_USER" => "tmf",
-        "MYSQL_PASSWORD" => "MYSQL_P4SS",
-        "MYSQL_ROOT_PASSWORD" => "MYSQL_R00T_P4SS",
-        "SERVER_PORT" => "2350",
-        "P2P_PORT" => "3450",
-        "RPC_PORT" => "5000",
-        "ADMINS" => "",
-        "AUTOSAVE" => "OFF",
-        "RANDOM_MAP_ORDER" => "0",
-    };
-
     match env::var(key.as_ref()) {
         Ok(val) => Some(val),
-        Err(_e) => match ENVS.get(key.as_ref()) {
-            Some(val) => Some(val.to_string()),
-            None => {
-                println!("Requested key \"{key}\" not found!");
-                None
-            }
-        },
+        Err(_e) => {
+            println!("Requested key \"{key}\" not found!");
+            None
+        }
     }
 }
 
 fn load_xml(path: &str) -> exile::error::Result<Document> {
-    let file = fs::read_to_string(path).expect(format!("File not found: <{}>", path).as_str());
+    let file = fs::read_to_string(path).unwrap_or_else(|_| panic!("File not found: <{}>", path));
 
     exile::parse(file.strip_bom())
 }
@@ -47,11 +29,8 @@ fn set_text<S: AsRef<str>>(el: &mut Element, node: &str, text: S) {
     el.child_mut(node).unwrap().set_text(text.as_ref()).unwrap();
 }
 
-fn boolean_env<S: AsRef<str>>(key: S) -> Result<bool, ()> {
-    match get_env(key.as_ref()) {
-        Some(x) => Ok(x.eq_ignore_ascii_case("ON") || x.eq_ignore_ascii_case("TRUE")),
-        None => Err(()),
-    }
+fn boolean_env<S: AsRef<str>>(key: S) -> Option<bool> {
+    Some(["on", "true"].contains(&get_env(key.as_ref())?.to_ascii_lowercase().as_str()))
 }
 
 fn authorization_levels(authorization_levels: &mut Element) {
@@ -138,7 +117,7 @@ fn config() {
         masteradmins.add_child(el);
     }
 
-    if boolean_env("AUTOSAVE").unwrap() {
+    if boolean_env("AUTOSAVE").unwrap_or(false) {
         set_text(
             aseco,
             "default_tracklist",
@@ -178,7 +157,7 @@ fn guest_list() {
     for admin in get_env("ADMINS").unwrap().split(",") {
         let mut player = Element::from_name("player");
         let mut login = Element::from_name("login");
-        login.add_text(admin);
+        login.add_text(admin.trim());
         player.add_child(login);
         guest_list.add_child(player);
     }
