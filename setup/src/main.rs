@@ -283,7 +283,7 @@ fn commands() {
 fn main() {
     println!("Starting!");
 
-    set_current_dir(Path::new("./tmnf")).unwrap();
+    set_current_dir(Path::new("/tmnf")).unwrap();
 
     dedicated_cfg();
     localdatabase();
