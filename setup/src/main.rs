@@ -2,9 +2,10 @@ use exile::{Document, Element};
 use phf::phf_map;
 use regex::Regex;
 use std::{
-    env,
+    env::{self, set_current_dir},
     fs::{self, OpenOptions},
     io::{Read, Seek, Write},
+    path::Path,
     process::{Command, Stdio},
 };
 use strip_bom::StripBom;
@@ -281,6 +282,8 @@ fn commands() {
 
 fn main() {
     println!("Starting!");
+
+    set_current_dir(Path::new("./tmnf")).unwrap();
 
     dedicated_cfg();
     localdatabase();
